@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#10131b"><title>MyTube - YouTube Player</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+  <header><div class="brand">▶ MyTube</div><div class="auth"><div id="g_id_onload" data-client_id="YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com" data-callback="handleCredentialResponse" data-auto_prompt="false"></div><div class="g_id_signin" data-type="standard" data-size="large" data-theme="filled_black" data-text="signin_with" data-shape="pill"></div><button id="signout" class="secondary hidden">ออกจากระบบ</button></div></header>
+  <main>
+    <section class="welcome"><h1>ดูวิดีโอที่ชอบ</h1><p>วางลิงก์ YouTube เพื่อเริ่มเล่น หรือบันทึกคลิปไว้ในรายการโปรด</p><div class="userline" id="userline">ยังไม่ได้เข้าสู่ระบบ Google</div></section>
+    <section class="search"><input id="videoUrl" type="url" placeholder="วางลิงก์ YouTube เช่น https://youtu.be/..." aria-label="ลิงก์ YouTube"><button id="loadBtn">เล่นวิดีโอ</button></section>
+    <section class="player-wrap"><div id="player-placeholder"><span>วิดีโอจะแสดงตรงนี้</span></div></section>
+    <section class="actions"><button id="saveBtn" class="secondary" disabled>♡ บันทึกคลิปนี้</button><span id="status">รองรับลิงก์ YouTube ปกติและ Shorts</span></section>
+    <section class="favorites"><h2>รายการโปรดในอุปกรณ์นี้</h2><div id="favoriteList" class="favorite-list"><p class="muted">ยังไม่มีคลิปที่บันทึกไว้</p></div></section>
+    <p class="notice">หมายเหตุ: วิดีโอเล่นผ่าน YouTube Player อย่างเป็นทางการ โฆษณาอาจแสดงตามที่ YouTube กำหนด เว็บนี้ไม่มีระบบข้ามหรือปิดโฆษณา</p>
+  </main>
+  <footer>MyTube • เว็บตัวอย่างส่วนตัว</footer>
+  <script src="app.js"></script>
+</body></html>
