@@ -1,28 +1,107 @@
 <!doctype html>
 <html lang="th">
 <head>
-  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="theme-color" content="#10131b"><title>MyTube - YouTube Player</title>
-  <link rel="stylesheet" href="style.css">
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
-  <script src="https://www.youtube.com/iframe_api"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#101820">
+<title>Chess 80</title>
+<style>
+:root{--bg:#101820;--panel:#1c2933;--light:#e9dfc9;--dark:#78917d;--accent:#e6b85c;--text:#f5f2ea}
+*{box-sizing:border-box}
+body{margin:0;min-height:100dvh;background:radial-gradient(circle at top,#263b48,#101820 65%);color:var(--text);font-family:system-ui,-apple-system,"Noto Sans Thai",sans-serif;display:flex;justify-content:center}
+.app{width:100%;max-width:760px;min-height:100dvh;padding:12px 10px 20px;display:flex;flex-direction:column;align-items:center;gap:12px}
+header{width:100%;display:flex;justify-content:space-between;align-items:center}
+h1{font-size:22px;margin:0;letter-spacing:.5px}
+.sub{font-size:12px;color:#b8c5ca}
+.status{width:100%;background:var(--panel);border:1px solid #344650;border-radius:13px;padding:10px 13px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.status strong{font-size:15px}.status span{font-size:12px;color:#c5d0d3}
+.board-wrap{width:min(80vw,80dvh,620px);max-width:100%;aspect-ratio:1;position:relative;box-shadow:0 14px 40px #0008;border:5px solid #35434a;border-radius:5px;overflow:hidden;touch-action:manipulation}
+.board{width:100%;height:100%;display:grid;grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(8,1fr)}
+.square{border:0;padding:0;position:relative;display:flex;align-items:center;justify-content:center;font-size:clamp(24px,8.5vw,58px);line-height:1;cursor:pointer;user-select:none}
+.light{background:var(--light)}.dark{background:var(--dark)}
+.square.selected{box-shadow:inset 0 0 0 4px #f5c451}
+.square.last{background-image:linear-gradient(#e6b85c66,#e6b85c66)}
+.square.legal:after{content:"";width:23%;height:23%;border-radius:50%;background:#17251c66;position:absolute}
+.square.capture:after{content:"";position:absolute;inset:4px;border:4px solid #b34e43aa;border-radius:50%}
+.piece{z-index:1;filter:drop-shadow(0 2px 1px #0005)}
+.coords{position:absolute;font-size:9px;font-weight:700;pointer-events:none;opacity:.7}
+.file{bottom:2px;right:4px}.rank{top:2px;left:4px}
+.controls{width:100%;display:flex;gap:8px;flex-wrap:wrap}
+button{border:1px solid #52636b;background:#263944;color:var(--text);border-radius:10px;padding:10px 14px;font-size:14px;font-weight:600;cursor:pointer}
+button.primary{background:var(--accent);color:#17212a;border-color:var(--accent)}
+button:active{transform:scale(.98)}
+.moves{width:100%;background:var(--panel);border:1px solid #344650;border-radius:12px;padding:10px 12px;min-height:55px}
+.moves h2{font-size:13px;margin:0 0 6px;color:#d9c58d}
+#history{font-size:12px;color:#d2dcde;line-height:1.7;max-height:100px;overflow:auto;word-break:break-word}
+.note{font-size:11px;color:#9eafb5;text-align:center}
+@media(min-width:600px){.app{padding-top:20px}.board-wrap{width:min(80vw,80dvh,620px)}}
+</style>
 </head>
 <body>
-  <header><div class="brand">▶ MyTube</div><div class="auth"><div id="g_id_onload" data-client_id="YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com" data-callback="handleCredentialResponse" data-auto_prompt="false"></div><div class="g_id_signin" data-type="standard" data-size="large" data-theme="filled_black" data-text="signin_with" data-shape="pill"></div><button id="signout" class="secondary hidden">ออกจากระบบ</button></div></header>
-  <main>
-    <section class="welcome"><h1>ดูคลิปต่อเนื่อง</h1><p>เพิ่มลิงก์หลายคลิป แล้วปัดขึ้น/ลงเพื่อเปลี่ยนคลิป หรือให้เล่นคลิปถัดไปอัตโนมัติ</p><div class="userline" id="userline">ยังไม่ได้เข้าสู่ระบบ Google</div></section>
-    <section class="search"><input id="videoUrl" type="url" placeholder="วางลิงก์ YouTube หรือ Shorts" aria-label="ลิงก์ YouTube"><button id="loadBtn">เพิ่มคลิป</button></section>
-    <section class="watch-layout">
-      <div class="player-column">
-        <div class="player-wrap" id="playerWrap"><div id="player"></div><div id="player-placeholder"><span>เพิ่มคลิปเพื่อเริ่มเล่น</span></div></div>
-        <div class="clip-controls"><button id="prevBtn" class="secondary" disabled>↑ ก่อนหน้า</button><span id="clipCounter">0 / 0</span><button id="nextBtn" disabled>↓ คลิปถัดไป</button></div>
-        <div class="actions"><button id="saveBtn" class="secondary" disabled>♡ บันทึกคลิปนี้</button><span id="status">ปัดขึ้นเพื่อไปคลิปถัดไป</span></div>
-      </div>
-      <aside class="queue"><div class="queue-head"><h2>คิวคลิป</h2><button id="clearQueue" class="secondary small">ล้างคิว</button></div><div id="queueList" class="queue-list"><p class="muted">ยังไม่มีคลิปในคิว</p></div></aside>
-    </section>
-    <section class="favorites"><h2>รายการโปรดในอุปกรณ์นี้</h2><div id="favoriteList" class="favorite-list"><p class="muted">ยังไม่มีคลิปที่บันทึกไว้</p></div></section>
-    <p class="notice">วิดีโอเล่นผ่าน YouTube Player อย่างเป็นทางการ โฆษณาอาจแสดงตามที่ YouTube กำหนด เว็บนี้ไม่มีระบบข้ามหรือปิดโฆษณา การเล่นคลิปถัดไปอัตโนมัติทำงานเมื่อ YouTube Player แจ้งว่าคลิปจบ</p>
-  </main>
-  <footer>MyTube • เว็บตัวอย่างส่วนตัว</footer>
-  <script src="app.js"></script>
+<main class="app">
+<header><div><h1>♟ Chess 80</h1><div class="sub">เกมหมากรุกสากล • เล่น 2 คนบนเครื่องเดียว</div></div><div class="sub">กระดานใหญ่ 80%</div></header>
+<div class="status"><div><strong id="turn">ตาเดิน: ขาว</strong><br><span id="message">เลือกตัวหมากเพื่อเริ่มเล่น</span></div><span id="state">พร้อมเล่น</span></div>
+<div class="board-wrap"><div id="board" class="board" aria-label="กระดานหมากรุก"></div></div>
+<div class="controls">
+<button class="primary" id="new">เริ่มเกมใหม่</button>
+<button id="undo">ย้อนกลับ</button>
+<button id="flip">พลิกกระดาน</button>
+</div>
+<section class="moves"><h2>บันทึกการเดิน</h2><div id="history">ยังไม่มีการเดิน</div></section>
+<div class="note">ต้องเชื่อมต่ออินเทอร์เน็ตเพื่อโหลดตัวตรวจสอบกติกาหมากรุกในครั้งแรก</div>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+<script>
+(function(){
+ const boardEl=document.getElementById('board');
+ const turnEl=document.getElementById('turn'), msgEl=document.getElementById('message'), stateEl=document.getElementById('state'), historyEl=document.getElementById('history');
+ if(typeof Chess==='undefined'){msgEl.textContent='โหลดระบบกติกาไม่สำเร็จ กรุณาตรวจอินเทอร์เน็ตแล้วเปิดใหม่';return;}
+ const game=new Chess();
+ const symbols={wp:'♙',wn:'♘',wb:'♗',wr:'♖',wq:'♕',wk:'♔',bp:'♟',bn:'♞',bb:'♝',br:'♜',bq:'♛',bk:'♚'};
+ let selected=null, legal=[], flipped=false, last=null;
+ function render(){
+   boardEl.innerHTML='';
+   const files=flipped?['h','g','f','e','d','c','b','a']:['a','b','c','d','e','f','g','h'];
+   const ranks=flipped?[1,2,3,4,5,6,7,8]:[8,7,6,5,4,3,2,1];
+   ranks.forEach((rank,ri)=>files.forEach((file,fi)=>{
+     const sq=file+rank, piece=game.get(sq), cell=document.createElement('button');
+     cell.className='square '+(((ri+fi)%2===0)?'light':'dark');
+     if(selected===sq)cell.classList.add('selected');
+     if(last&&(last.from===sq||last.to===sq))cell.classList.add('last');
+     const move=legal.find(m=>m.to===sq);
+     if(move)cell.classList.add(game.get(sq)?'capture':'legal');
+     if(piece){const span=document.createElement('span');span.className='piece';span.textContent=symbols[piece.color+piece.type];span.style.color=piece.color==='w'?'#fff':'#111';span.style.webkitTextStroke=piece.color==='w'?'1px #333':'0.5px #aaa';cell.appendChild(span);}
+     if(fi===0){const c=document.createElement('span');c.className='coords rank';c.textContent=rank;cell.appendChild(c);}
+     if(ri===7){const c=document.createElement('span');c.className='coords file';c.textContent=file;cell.appendChild(c);}
+     cell.addEventListener('click',()=>tap(sq));boardEl.appendChild(cell);
+   }));
+   turnEl.textContent='ตาเดิน: '+(game.turn()==='w'?'ขาว':'ดำ');
+   if(game.in_checkmate()){msgEl.textContent='รุกฆาต! '+(game.turn()==='w'?'ดำ':'ขาว')+' ชนะ';stateEl.textContent='จบเกม';}
+   else if(game.in_draw()){msgEl.textContent='เสมอ';stateEl.textContent='จบเกม';}
+   else if(game.in_check()){msgEl.textContent='กำลังถูกรุก!';stateEl.textContent='ระวัง';}
+   else{msgEl.textContent=selected?'เลือกช่องปลายทาง':'เลือกตัวหมากเพื่อเดิน';stateEl.textContent='กำลังเล่น';}
+   const hist=game.history();
+   historyEl.textContent=hist.length?hist.reduce((a,m,i)=>{if(i%2===0)a.push((Math.floor(i/2)+1)+'. '+m);else a[a.length-1]+='  '+m;return a;},[]).join('   '):'ยังไม่มีการเดิน';
+ }
+ function tap(sq){
+   if(game.game_over())return;
+   const piece=game.get(sq);
+   if(selected&&legal.some(m=>m.to===sq)){
+     const moving=game.get(selected);
+     const promotion=moving&&moving.type==='p'&&(sq.endsWith('8')||sq.endsWith('1'))?'q':undefined;
+     const result=game.move({from:selected,to:sq,promotion});
+     if(result)last={from:result.from,to:result.to};
+     selected=null;legal=[];render();return;
+   }
+   if(piece&&piece.color===game.turn()){
+     selected=sq;legal=game.moves({square:sq,verbose:true});
+   }else{selected=null;legal=[];}
+   render();
+ }
+ document.getElementById('new').onclick=()=>{game.reset();selected=null;legal=[];last=null;render();};
+ document.getElementById('undo').onclick=()=>{const m=game.undo();if(m)last=null;selected=null;legal=[];render();};
+ document.getElementById('flip').onclick=()=>{flipped=!flipped;render();};
+ render();
+})();
+</script>
 </body></html>
